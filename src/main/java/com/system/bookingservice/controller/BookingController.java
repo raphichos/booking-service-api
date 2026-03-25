@@ -18,4 +18,9 @@ public class BookingController {
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
+
+    @PostMapping
+    public Booking createBooking(@RequestBody Booking booking){
+        return bookingRepository.save(booking);
+    }
 }
