@@ -1,8 +1,9 @@
 package com.system.bookingservice.controller;
 
 import com.system.bookingservice.model.Booking;
-import com.system.bookingservice.repository.BookingRepository;
+import com.system.bookingservice.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,35 +13,27 @@ import java.util.List;
 public class BookingController {
 
     @Autowired
-    private BookingRepository bookingRepository;
+    private BookingService bookingService;
 
     @GetMapping
     public List<Booking> getAllBookings() {
-        return bookingRepository.findAll();
+        return bookingService.getAllBookings();
     }
 
     @PostMapping
-    public Booking createBooking(@RequestBody Booking booking){
-        return bookingRepository.save(booking);
+    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
+        return ResponseEntity.status(201).body(bookingService.saveBooking(booking));
     }
 
     @DeleteMapping("/{id}")
     public void deleteBooking(@PathVariable Long id) {
-        bookingRepository.deleteById(id);
+        bookingService.deleteBooking(id);
     }
 
     @PutMapping("/{id}")
-    public Booking updateBooking(@PathVariable Long id, @RequestBody Booking newBookingData) {
-        return bookingRepository.findById(id)
-                .map(booking -> {
-                    booking.setClientName(newBookingData.getClientName());
-                    booking.setServiceType(newBookingData.getServiceType());
-                    booking.setStatus(newBookingData.getStatus());
-                    return bookingRepository.save(booking);
-                })
-                .orElseGet(() -> {
-                    newBookingData.setId(id);
-                    return bookingRepository.save(newBookingData);
-                });
+    public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking booking) {
+        return bookingService.updateBooking(id, booking)
+                .map(ResponseEntity::ok)            // If found, return 200 OK + Data
+                .orElse(ResponseEntity.notFound().build()); // If not found, return 404 Not Found
     }
 }
